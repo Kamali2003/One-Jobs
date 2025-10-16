@@ -1,0 +1,12 @@
+{
+  "users": [],
+  "otps": [
+    {
+      "identifier": "kamaliseelan03@gmail.com",
+      "otp": "950367",
+      "expiresAt": 1759678365867,
+      "method": "email",
+      "createdAt": "2025-10-05T15:22:45.872Z"
+    }
+  ]
+}
