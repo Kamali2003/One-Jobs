@@ -32,6 +32,7 @@ const JobSeeker = () => {
 
   const [currentJobId, setCurrentJobId] = useState(null);
   const [currentJobData, setCurrentJobData] = useState(null);
+  const [modalAnimation, setModalAnimation] = useState("");
 
   const loadApplications = useCallback(() => {
     const savedApplications = localStorage.getItem("jobApplications");
@@ -192,7 +193,18 @@ const JobSeeker = () => {
       coverLetter: ""
     });
     
+    setModalAnimation("fadeIn");
     setShowApplicationModal(true);
+  };
+
+  const closeModal = () => {
+    setModalAnimation("fadeOut");
+    setTimeout(() => {
+      setShowApplicationModal(false);
+      setCurrentJobId(null);
+      setCurrentJobData(null);
+      setModalAnimation("");
+    }, 300);
   };
 
   const handleInputChange = (e) => {
@@ -248,9 +260,7 @@ const JobSeeker = () => {
     if (!jobToApply) {
       console.error("Missing job data:", { jobToApply, jobIdToUse, jobs });
       alert("Error: Job information is missing. Please try applying again. Make sure jobs exist in the system.");
-      setShowApplicationModal(false);
-      setCurrentJobId(null);
-      setCurrentJobData(null);
+      closeModal();
       return;
     }
 
@@ -315,11 +325,13 @@ const JobSeeker = () => {
       resume: null,
       coverLetter: ""
     });
-    setShowApplicationModal(false);
-    setCurrentJobId(null);
-    setCurrentJobData(null);
     
-    alert("Application submitted successfully!");
+    // Add success animation before closing
+    setModalAnimation("success");
+    setTimeout(() => {
+      closeModal();
+      alert("Application submitted successfully!");
+    }, 600);
   };
 
   const handleWithdrawJob = (jobId) => {
@@ -357,18 +369,32 @@ const JobSeeker = () => {
   };
 
   const JobCard = ({ job, onApply, onWithdraw, isApplied }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
-      <div style={{ 
-        padding: "20px", 
-        border: "1px solid #e5e7eb", 
-        borderRadius: "12px", 
-        backgroundColor: "white",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-        marginBottom: "16px"
-      }}>
+      <div 
+        style={{ 
+          padding: "20px", 
+          border: "1px solid #e5e7eb", 
+          borderRadius: "12px", 
+          backgroundColor: "white",
+          boxShadow: isHovered ? "0 10px 25px rgba(0, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.1)",
+          marginBottom: "16px",
+          transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+          transition: "all 0.3s ease",
+          cursor: "pointer"
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: "0 0 8px 0", color: "#111827", fontSize: "18px" }}>
+            <h3 style={{ 
+              margin: "0 0 8px 0", 
+              color: "#111827", 
+              fontSize: "18px",
+              transition: "color 0.2s ease"
+            }}>
               {job.title}
             </h3>
             <p style={{ margin: "0 0 8px 0", color: "#374151", fontWeight: "500" }}>
@@ -396,7 +422,10 @@ const JobSeeker = () => {
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "600",
-              minWidth: "120px"
+              minWidth: "120px",
+              transform: isHovered ? "scale(1.05)" : "scale(1)",
+              transition: "all 0.2s ease",
+              boxShadow: isHovered ? "0 4px 12px rgba(59, 130, 246, 0.3)" : "none"
             }}
           >
             {isApplied ? "Withdraw" : "Apply"}
@@ -416,9 +445,10 @@ const JobSeeker = () => {
           borderRadius: "12px",
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
           maxWidth: "800px",
-          margin: "40px auto"
+          margin: "40px auto",
+          animation: "fadeInUp 0.6s ease"
         }}>
-          <div style={{ fontSize: "64px", marginBottom: "20px" }}>📋</div>
+          <div style={{ fontSize: "64px", marginBottom: "20px", animation: "bounce 2s infinite" }}>📋</div>
           <h2 style={{ color: "#374151", marginBottom: "16px", fontSize: "24px" }}>No Applications Yet</h2>
           <p style={{ color: "#6b7280", marginBottom: "32px", fontSize: "16px", lineHeight: "1.5" }}>
             You haven't applied to any jobs yet. Start browsing available positions to kickstart your career journey.
@@ -434,10 +464,17 @@ const JobSeeker = () => {
               cursor: "pointer",
               fontWeight: "600",
               fontSize: "16px",
-              transition: "background-color 0.2s"
+              transition: "all 0.3s ease",
+              transform: "scale(1)",
             }}
-            onMouseOver={(e) => e.target.style.backgroundColor = "#2563eb"}
-            onMouseOut={(e) => e.target.style.backgroundColor = "#3b82f6"}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = "#2563eb";
+              e.target.style.transform = "scale(1.05)";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = "#3b82f6";
+              e.target.style.transform = "scale(1)";
+            }}
           >
             Browse Jobs
           </button>
@@ -446,12 +483,22 @@ const JobSeeker = () => {
     }
 
     return (
-      <div>
+      <div style={{ animation: "fadeIn 0.5s ease" }}>
         <div style={{ marginBottom: "32px" }}>
-          <h1 style={{ color: "#1f2937", marginBottom: "8px", fontSize: "28px", fontWeight: "700" }}>
+          <h1 style={{ 
+            color: "#1f2937", 
+            marginBottom: "8px", 
+            fontSize: "28px", 
+            fontWeight: "700",
+            animation: "slideInDown 0.5s ease"
+          }}>
             Application Tracker
           </h1>
-          <p style={{ color: "#6b7280", fontSize: "16px" }}>
+          <p style={{ 
+            color: "#6b7280", 
+            fontSize: "16px",
+            animation: "slideInDown 0.5s ease 0.1s both"
+          }}>
             Track all your job applications in one place
           </p>
         </div>
@@ -462,57 +509,42 @@ const JobSeeker = () => {
           gap: "16px", 
           marginBottom: "32px"
         }}>
-          <div style={{ 
-            backgroundColor: "white", 
-            padding: "20px", 
-            borderRadius: "12px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "32px", fontWeight: "bold", color: "#3b82f6", marginBottom: "8px" }}>
-              {stats.total}
+          {[
+            { value: stats.total, label: "Total Applications", color: "#3b82f6", delay: 0 },
+            { value: stats.viewed, label: "Viewed", color: "#f59e0b", delay: 0.1 },
+            { value: stats.shortlisted, label: "Shortlisted", color: "#8b5cf6", delay: 0.2 },
+            { value: stats.interview, label: "Interviews", color: "#10b981", delay: 0.3 }
+          ].map((stat, index) => (
+            <div 
+              key={stat.label}
+              style={{ 
+                backgroundColor: "white", 
+                padding: "20px", 
+                borderRadius: "12px",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+                textAlign: "center",
+                animation: `slideInUp 0.5s ease ${stat.delay}s both`,
+                transform: "translateY(0)",
+                transition: "transform 0.3s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-5px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <div style={{ 
+                fontSize: "32px", 
+                fontWeight: "bold", 
+                color: stat.color, 
+                marginBottom: "8px" 
+              }}>
+                {stat.value}
+              </div>
+              <div style={{ color: "#6b7280", fontSize: "14px" }}>{stat.label}</div>
             </div>
-            <div style={{ color: "#6b7280", fontSize: "14px" }}>Total Applications</div>
-          </div>
-
-          <div style={{ 
-            backgroundColor: "white", 
-            padding: "20px", 
-            borderRadius: "12px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "32px", fontWeight: "bold", color: "#f59e0b", marginBottom: "8px" }}>
-              {stats.viewed}
-            </div>
-            <div style={{ color: "#6b7280", fontSize: "14px" }}>Viewed</div>
-          </div>
-
-          <div style={{ 
-            backgroundColor: "white", 
-            padding: "20px", 
-            borderRadius: "12px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "32px", fontWeight: "bold", color: "#8b5cf6", marginBottom: "8px" }}>
-              {stats.shortlisted}
-            </div>
-            <div style={{ color: "#6b7280", fontSize: "14px" }}>Shortlisted</div>
-          </div>
-
-          <div style={{ 
-            backgroundColor: "white", 
-            padding: "20px", 
-            borderRadius: "12px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-            textAlign: "center"
-          }}>
-            <div style={{ fontSize: "32px", fontWeight: "bold", color: "#10b981", marginBottom: "8px" }}>
-              {stats.interview}
-            </div>
-            <div style={{ color: "#6b7280", fontSize: "14px" }}>Interviews</div>
-          </div>
+          ))}
         </div>
 
         <div style={{ 
@@ -525,7 +557,8 @@ const JobSeeker = () => {
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
-          gap: "16px"
+          gap: "16px",
+          animation: "fadeIn 0.6s ease 0.4s both"
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <label style={{ color: "#374151", fontWeight: "500" }}>Filter by:</label>
@@ -536,7 +569,8 @@ const JobSeeker = () => {
                 padding: "8px 12px",
                 borderRadius: "6px",
                 border: "1px solid #d1d5db",
-                backgroundColor: "white"
+                backgroundColor: "white",
+                transition: "all 0.2s ease"
               }}
             >
               <option value="All">All Status</option>
@@ -558,7 +592,8 @@ const JobSeeker = () => {
                 padding: "8px 12px",
                 borderRadius: "6px",
                 border: "1px solid #d1d5db",
-                backgroundColor: "white"
+                backgroundColor: "white",
+                transition: "all 0.2s ease"
               }}
             >
               <option value="newest">Newest First</option>
@@ -568,7 +603,7 @@ const JobSeeker = () => {
         </div>
 
         <div style={{ display: "grid", gap: "16px" }}>
-          {filteredApplications.map((application) => (
+          {filteredApplications.map((application, index) => (
             <div
               key={application.applicationId}
               style={{
@@ -577,11 +612,12 @@ const JobSeeker = () => {
                 borderRadius: "12px",
                 backgroundColor: "white",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-                transition: "transform 0.2s, box-shadow 0.2s"
+                transition: "all 0.3s ease",
+                animation: `slideInRight 0.5s ease ${index * 0.1}s both`
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)";
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.1)";
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.transform = "none";
@@ -612,7 +648,8 @@ const JobSeeker = () => {
                       fontSize: "12px",
                       fontWeight: "600",
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px"
+                      letterSpacing: "0.5px",
+                      transition: "all 0.3s ease"
                     }}
                   >
                     {application.status}
@@ -682,13 +719,19 @@ const JobSeeker = () => {
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: "500",
-                    transition: "background-color 0.2s",
+                    transition: "all 0.3s ease",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px"
                   }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = "#2563eb"}
-                  onMouseOut={(e) => e.target.style.backgroundColor = "#3b82f6"}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = "#2563eb";
+                    e.target.style.transform = "scale(1.05)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = "#3b82f6";
+                    e.target.style.transform = "scale(1)";
+                  }}
                 >
                   <span>👀</span> View Job Details
                 </button>
@@ -704,7 +747,7 @@ const JobSeeker = () => {
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: "500",
-                    transition: "background-color 0.2s",
+                    transition: "all 0.3s ease",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px"
@@ -712,10 +755,12 @@ const JobSeeker = () => {
                   onMouseOver={(e) => {
                     e.target.style.backgroundColor = "#dc3545";
                     e.target.style.color = "white";
+                    e.target.style.transform = "scale(1.05)";
                   }}
                   onMouseOut={(e) => {
                     e.target.style.backgroundColor = "#f8f9fa";
                     e.target.style.color = "#dc3545";
+                    e.target.style.transform = "scale(1)";
                   }}
                 >
                   <span>🗑️</span> Withdraw Application
@@ -731,9 +776,10 @@ const JobSeeker = () => {
             padding: "40px", 
             backgroundColor: "white", 
             borderRadius: "12px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)"
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+            animation: "fadeIn 0.5s ease"
           }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔍</div>
+            <div style={{ fontSize: "48px", marginBottom: "16px", animation: "pulse 2s infinite" }}>🔍</div>
             <h3 style={{ color: "#374151", marginBottom: "8px" }}>No applications match your filter</h3>
             <p style={{ color: "#6b7280" }}>Try changing your filter settings to see more applications.</p>
           </div>
@@ -744,13 +790,14 @@ const JobSeeker = () => {
 
   const renderJobSearch = () => {
     return (
-      <div>
+      <div style={{ animation: "fadeIn 0.5s ease" }}>
         <div style={{ 
           backgroundColor: "white", 
           padding: "20px", 
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          marginBottom: "24px"
+          marginBottom: "24px",
+          animation: "slideInDown 0.5s ease"
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <h3 style={{ margin: 0, color: "#333" }}>Filter Jobs</h3>
@@ -763,7 +810,16 @@ const JobSeeker = () => {
                 border: "none",
                 borderRadius: "6px",
                 cursor: "pointer",
-                fontWeight: "600"
+                fontWeight: "600",
+                transition: "all 0.3s ease"
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = "#4b5563";
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = "#6b7280";
+                e.target.style.transform = "scale(1)";
               }}
             >
               Clear All
@@ -771,112 +827,60 @@ const JobSeeker = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>Search</label>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Job title, company, or skills"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                  boxSizing: "border-box"
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>Work Mode</label>
-              <select
-                value={filterWorkMode}
-                onChange={(e) => setFilterWorkMode(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                  boxSizing: "border-box",
-                  backgroundColor: "white"
-                }}
-              >
-                <option value="All">All Work Modes</option>
-                <option value="On-site">On-site</option>
-                <option value="Remote">Remote</option>
-                <option value="Hybrid">Hybrid</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>Job Type</label>
-              <select
-                value={filterJobType}
-                onChange={(e) => setFilterJobType(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                  boxSizing: "border-box",
-                  backgroundColor: "white"
-                }}
-              >
-                <option value="All">All Job Types</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Internship">Internship</option>
-                <option value="Freelance">Freelance</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>Experience Level</label>
-              <select
-                value={filterExperience}
-                onChange={(e) => setFilterExperience(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                  boxSizing: "border-box",
-                  backgroundColor: "white"
-                }}
-              >
-                <option value="All">All Experience Levels</option>
-                <option value="Entry Level">Entry Level</option>
-                <option value="Junior">Junior</option>
-                <option value="Mid Level">Mid Level</option>
-                <option value="Senior">Senior</option>
-                <option value="Lead">Lead</option>
-                <option value="Executive">Executive</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>Location</label>
-              <input
-                type="text"
-                value={filterLocation}
-                onChange={(e) => setFilterLocation(e.target.value)}
-                placeholder="City, state, or remote"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid #d1d5db",
-                  boxSizing: "border-box"
-                }}
-              />
-            </div>
+            {[
+              { label: "Search", type: "text", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), placeholder: "Job title, company, or skills" },
+              { label: "Work Mode", type: "select", value: filterWorkMode, onChange: (e) => setFilterWorkMode(e.target.value), options: ["All", "On-site", "Remote", "Hybrid"] },
+              { label: "Job Type", type: "select", value: filterJobType, onChange: (e) => setFilterJobType(e.target.value), options: ["All", "Full-time", "Part-time", "Contract", "Internship", "Freelance"] },
+              { label: "Experience Level", type: "select", value: filterExperience, onChange: (e) => setFilterExperience(e.target.value), options: ["All", "Entry Level", "Junior", "Mid Level", "Senior", "Lead", "Executive"] },
+              { label: "Location", type: "text", value: filterLocation, onChange: (e) => setFilterLocation(e.target.value), placeholder: "City, state, or remote" }
+            ].map((field, index) => (
+              <div key={field.label} style={{ animation: `fadeInUp 0.5s ease ${index * 0.1}s both` }}>
+                <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>{field.label}</label>
+                {field.type === "select" ? (
+                  <select
+                    value={field.value}
+                    onChange={field.onChange}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #d1d5db",
+                      boxSizing: "border-box",
+                      backgroundColor: "white",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    {field.options.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={field.placeholder}
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      borderRadius: "8px",
+                      border: "1px solid #d1d5db",
+                      boxSizing: "border-box",
+                      transition: "all 0.2s ease"
+                    }}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
         <div>
-          <h2 style={{ marginBottom: "16px", color: "#333" }}>
+          <h2 style={{ 
+            marginBottom: "16px", 
+            color: "#333",
+            animation: "fadeIn 0.5s ease 0.3s both"
+          }}>
             {filteredJobs.length} Job{filteredJobs.length !== 1 ? 's' : ''} Found
           </h2>
           
@@ -886,9 +890,10 @@ const JobSeeker = () => {
               padding: "60px 20px", 
               backgroundColor: "white", 
               borderRadius: "12px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              animation: "fadeIn 0.5s ease"
             }}>
-              <div style={{ fontSize: "64px", marginBottom: "20px" }}>🔍</div>
+              <div style={{ fontSize: "64px", marginBottom: "20px", animation: "bounce 2s infinite" }}>🔍</div>
               <h3 style={{ color: "#374151", marginBottom: "16px" }}>No jobs found</h3>
               <p style={{ color: "#6b7280", marginBottom: "24px" }}>
                 Try adjusting your search filters or search terms to find more jobs.
@@ -902,7 +907,16 @@ const JobSeeker = () => {
                   border: "none",
                   borderRadius: "8px",
                   cursor: "pointer",
-                  fontWeight: "600"
+                  fontWeight: "600",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = "#2563eb";
+                  e.target.style.transform = "scale(1.05)";
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = "#3b82f6";
+                  e.target.style.transform = "scale(1)";
                 }}
               >
                 Clear All Filters
@@ -910,14 +924,18 @@ const JobSeeker = () => {
             </div>
           ) : (
             <div style={{ display: "grid", gap: "16px" }}>
-              {filteredJobs.map(job => (
-                <JobCard
+              {filteredJobs.map((job, index) => (
+                <div 
                   key={job.id}
-                  job={job}
-                  onApply={handleApplyClick}
-                  onWithdraw={handleWithdrawJob}
-                  isApplied={appliedJobs.has(job.id)}
-                />
+                  style={{ animation: `slideInUp 0.5s ease ${index * 0.1}s both` }}
+                >
+                  <JobCard
+                    job={job}
+                    onApply={handleApplyClick}
+                    onWithdraw={handleWithdrawJob}
+                    isApplied={appliedJobs.has(job.id)}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -944,7 +962,9 @@ const JobSeeker = () => {
           alignItems: "center",
           justifyContent: "center",
           zIndex: 1000,
-          padding: "20px"
+          padding: "20px",
+          animation: modalAnimation === "fadeIn" ? "fadeIn 0.3s ease" : 
+                    modalAnimation === "fadeOut" ? "fadeOut 0.3s ease" : "fadeIn 0.3s ease"
         }}>
           <div style={{
             backgroundColor: "white",
@@ -954,16 +974,14 @@ const JobSeeker = () => {
             maxWidth: "600px",
             maxHeight: "90vh",
             overflowY: "auto",
-            textAlign: "center"
+            textAlign: "center",
+            animation: modalAnimation === "fadeIn" ? "scaleIn 0.3s ease" : 
+                      modalAnimation === "fadeOut" ? "scaleOut 0.3s ease" : "scaleIn 0.3s ease"
           }}>
             <h2 style={{ marginBottom: "24px", color: "#1f2937" }}>Error</h2>
             <p>Job information is missing. Please close this window and try again.</p>
             <button
-              onClick={() => {
-                setShowApplicationModal(false);
-                setCurrentJobId(null);
-                setCurrentJobData(null);
-              }}
+              onClick={closeModal}
               style={{
                 padding: "12px 24px",
                 backgroundColor: "#6b7280",
@@ -972,7 +990,16 @@ const JobSeeker = () => {
                 borderRadius: "8px",
                 cursor: "pointer",
                 fontWeight: "600",
-                marginTop: "20px"
+                marginTop: "20px",
+                transition: "all 0.3s ease"
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = "#4b5563";
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = "#6b7280";
+                e.target.style.transform = "scale(1)";
               }}
             >
               Close
@@ -994,7 +1021,10 @@ const JobSeeker = () => {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 1000,
-        padding: "20px"
+        padding: "20px",
+        animation: modalAnimation === "fadeIn" ? "fadeIn 0.3s ease" : 
+                  modalAnimation === "fadeOut" ? "fadeOut 0.3s ease" :
+                  modalAnimation === "success" ? "pulse 0.6s ease" : "fadeIn 0.3s ease"
       }}>
         <div style={{
           backgroundColor: "white",
@@ -1003,72 +1033,43 @@ const JobSeeker = () => {
           width: "100%",
           maxWidth: "600px",
           maxHeight: "90vh",
-          overflowY: "auto"
+          overflowY: "auto",
+          animation: modalAnimation === "fadeIn" ? "scaleIn 0.3s ease" : 
+                    modalAnimation === "fadeOut" ? "scaleOut 0.3s ease" :
+                    modalAnimation === "success" ? "bounce 0.6s ease" : "scaleIn 0.3s ease"
         }}>
           <h2 style={{ marginBottom: "24px", color: "#1f2937" }}>
             Apply for {jobToShow.title} at {jobToShow.company}
           </h2>
           
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
-              Full Name *
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={applicantData.name}
-              onChange={handleInputChange}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: "1px solid #d1d5db",
-                boxSizing: "border-box"
-              }}
-              required
-            />
-          </div>
+          {[
+            { label: "Full Name *", type: "text", name: "name", value: applicantData.name, required: true },
+            { label: "Email Address *", type: "email", name: "email", value: applicantData.email, required: true },
+            { label: "Phone Number", type: "tel", name: "phone", value: applicantData.phone, required: false }
+          ].map((field, index) => (
+            <div key={field.name} style={{ marginBottom: "20px", animation: `slideInLeft 0.5s ease ${index * 0.1}s both` }}>
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
+                {field.label}
+              </label>
+              <input
+                type={field.type}
+                name={field.name}
+                value={field.value}
+                onChange={handleInputChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid #d1d5db",
+                  boxSizing: "border-box",
+                  transition: "all 0.2s ease"
+                }}
+                required={field.required}
+              />
+            </div>
+          ))}
           
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
-              Email Address *
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={applicantData.email}
-              onChange={handleInputChange}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: "1px solid #d1d5db",
-                boxSizing: "border-box"
-              }}
-              required
-            />
-          </div>
-          
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={applicantData.phone}
-              onChange={handleInputChange}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: "1px solid #d1d5db",
-                boxSizing: "border-box"
-              }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "20px", animation: "slideInLeft 0.5s ease 0.3s both" }}>
             <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
               Resume *
             </label>
@@ -1089,7 +1090,7 @@ const JobSeeker = () => {
             )}
           </div>
           
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "24px", animation: "slideInLeft 0.5s ease 0.4s both" }}>
             <label style={{ display: "block", marginBottom: "6px", fontWeight: "500" }}>
               Cover Letter (Optional)
             </label>
@@ -1105,18 +1106,20 @@ const JobSeeker = () => {
                 borderRadius: "8px",
                 border: "1px solid #d1d5db",
                 boxSizing: "border-box",
-                resize: "vertical"
+                resize: "vertical",
+                transition: "all 0.2s ease"
               }}
             />
           </div>
           
-          <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+          <div style={{ 
+            display: "flex", 
+            gap: "12px", 
+            justifyContent: "flex-end",
+            animation: "fadeIn 0.5s ease 0.5s both"
+          }}>
             <button
-              onClick={() => {
-                setShowApplicationModal(false);
-                setCurrentJobId(null);
-                setCurrentJobData(null);
-              }}
+              onClick={closeModal}
               style={{
                 padding: "12px 24px",
                 backgroundColor: "#6b7280",
@@ -1124,7 +1127,16 @@ const JobSeeker = () => {
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontWeight: "600"
+                fontWeight: "600",
+                transition: "all 0.3s ease"
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = "#4b5563";
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = "#6b7280";
+                e.target.style.transform = "scale(1)";
               }}
             >
               Cancel
@@ -1138,7 +1150,16 @@ const JobSeeker = () => {
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontWeight: "600"
+                fontWeight: "600",
+                transition: "all 0.3s ease"
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = "#2563eb";
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = "#3b82f6";
+                e.target.style.transform = "scale(1)";
               }}
             >
               Submit Application
@@ -1151,58 +1172,149 @@ const JobSeeker = () => {
 
   return (
     <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+          }
+          @keyframes fadeInUp {
+            from { 
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes slideInDown {
+            from { 
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes slideInUp {
+            from { 
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes slideInLeft {
+            from { 
+              opacity: 0;
+              transform: translateX(-30px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+          @keyframes slideInRight {
+            from { 
+              opacity: 0;
+              transform: translateX(30px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+          @keyframes scaleIn {
+            from { 
+              opacity: 0;
+              transform: scale(0.8);
+            }
+            to { 
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          @keyframes scaleOut {
+            from { 
+              opacity: 1;
+              transform: scale(1);
+            }
+            to { 
+              opacity: 0;
+              transform: scale(0.8);
+            }
+          }
+          @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+              transform: translateY(0);
+            }
+            40%, 43% {
+              transform: translateY(-10px);
+            }
+            70% {
+              transform: translateY(-5px);
+            }
+            90% {
+              transform: translateY(-2px);
+            }
+          }
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+          }
+        `}
+      </style>
+
       {/* Tab Navigation */}
       <div style={{ 
         display: "flex", 
         marginBottom: "32px",
         borderBottom: "2px solid #e5e7eb"
       }}>
-        <button
-          onClick={() => setActiveTab("browse")}
-          style={{
-            padding: "16px 32px",
-            backgroundColor: activeTab === "browse" ? "#3b82f6" : "transparent",
-            color: activeTab === "browse" ? "white" : "#6b7280",
-            border: "none",
-            borderBottom: activeTab === "browse" ? "2px solid #3b82f6" : "none",
-            cursor: "pointer",
-            fontWeight: "600",
-            fontSize: "16px",
-            transition: "all 0.2s",
-            marginBottom: "-2px"
-          }}
-        >
-          Browse Jobs
-        </button>
-        <button
-          onClick={() => setActiveTab("tracker")}
-          style={{
-            padding: "16px 32px",
-            backgroundColor: activeTab === "tracker" ? "#3b82f6" : "transparent",
-            color: activeTab === "tracker" ? "white" : "#6b7280",
-            border: "none",
-            borderBottom: activeTab === "tracker" ? "2px solid #3b82f6" : "none",
-            cursor: "pointer",
-            fontWeight: "600",
-            fontSize: "16px",
-            transition: "all 0.2s",
-            marginBottom: "-2px"
-          }}
-        >
-          Application Tracker
-          {applications.length > 0 && (
-            <span style={{
-              marginLeft: "8px",
-              backgroundColor: "#ef4444",
-              color: "white",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px"
-            }}>
-              {applications.length}
-            </span>
-          )}
-        </button>
+        {["browse", "tracker"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: "16px 32px",
+              backgroundColor: activeTab === tab ? "#3b82f6" : "transparent",
+              color: activeTab === tab ? "white" : "#6b7280",
+              border: "none",
+              borderBottom: activeTab === tab ? "2px solid #3b82f6" : "none",
+              cursor: "pointer",
+              fontWeight: "600",
+              fontSize: "16px",
+              transition: "all 0.3s ease",
+              marginBottom: "-2px",
+              position: "relative",
+              overflow: "hidden"
+            }}
+          >
+            {tab === "browse" ? "Browse Jobs" : "Application Tracker"}
+            {tab === "tracker" && applications.length > 0 && (
+              <span style={{
+                marginLeft: "8px",
+                backgroundColor: "#ef4444",
+                color: "white",
+                borderRadius: "12px",
+                padding: "2px 8px",
+                fontSize: "12px",
+                animation: "pulse 2s infinite"
+              }}>
+                {applications.length}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {activeTab === "browse" ? renderJobSearch() : renderTracker()}
